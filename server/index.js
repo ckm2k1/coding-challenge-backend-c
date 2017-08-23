@@ -8,7 +8,7 @@ const routes = require('./routes');
 const config = require('./config');
 
 // module.exports = app;
-
+isDev && console.log('Running in DEV mode');
 // console.log('Server running at http://127.0.0.1:%d/suggestions', port);
 
 if (cluster.isMaster && !isDev) {
@@ -25,7 +25,7 @@ if (cluster.isMaster && !isDev) {
 } else {
 	const app = express();
 	app.use(routes);
-	app.listen(port, host);
+	app.listen(port);
 
-	console.log(`Worker ${process.pid} started`);
+	console.log(`Worker ${process.pid} started, listening on ${port}`);
 }
