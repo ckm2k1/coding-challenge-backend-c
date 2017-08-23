@@ -1,0 +1,14 @@
+## Development notes
+
+### Flaws and trade offs
+1. Doesn't use any kind of DB. Getting one involved, processing the data, loading it, using a lib to interface
+with it and all other small tasks would simply take time away from the main problem. The code uses an in memory
+cache to stay quick and not bog down under load.
+2. Not support for internationalization or any encodings other than ASCII. Implementing this is non-trivial at best, and would once again take
+time away from the main problem.
+3. The search algorithm is competant, but could be improved by introducing support for common mis-spellings, user search history, using bitlap instead of levenshtein distance and possibly other (faster) searching techniques. A full text search solution might also be the way to go for
+much larger data sets.
+
+### Scalability
+1. This implementation could be clustered if the DB/cache are centralized (as would be the case in a real enviro) using, for example, cassandra for storage and memcache for caching.
+2. Despite being a very simple solution, it can handle a pretty solid load (tested with 'ab').

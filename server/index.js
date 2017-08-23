@@ -1,14 +1,29 @@
+const cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
 const http = require('http');
 const express = require('express');
 const port = process.env.PORT || 2345;
 const routes = require('./routes');
 
-const app = express();
-app.use(routes);
+// module.exports = app;
 
-app.listen(port);
+// console.log('Server running at http://127.0.0.1:%d/suggestions', port);
 
+if (cluster.isMaster) {
+	console.log(`Master ${process.pid} is running`);
 
-module.exports = app;
+	// Fork workers.
+	for (let i = 0; i < numCPUs; i++) {
+		cluster.fork();
+	}
 
-console.log('Server running at http://127.0.0.1:%d/suggestions', port);
+	cluster.on('exit', (worker, code, signal) => {
+		console.log(`worker ${worker.process.pid} died`);
+	});
+} else {
+	const app = express();
+	app.use(routes);
+	app.listen(port);
+
+	console.log(`Worker ${process.pid} started`);
+}

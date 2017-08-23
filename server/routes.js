@@ -1,23 +1,47 @@
 const express = require('express');
 const suggestionsRouter = express.Router();
 const db = new (require('./db'))();
+const cache = require('./cache');
+const config = require('./config');
 db.load();
 
 suggestionsRouter.get('/suggestions', (req, res) => {
-  const {q, latitude, longitude} = req.query;
+  const {q: query, lat, long, ['use-cache']: useCache = true, limit = config.search.minResults} = req.query;
 
-  if (!q) {
+  if (!query) {
     res.status(400);
     return res.end(JSON.stringify({
       error: 'Empty query'
     }));
   }
 
-  const sug = db.search(q);
-  const output = JSON.stringify({suggestions: sug.slice(0, 20)}, null, 2);
+  const cacheKey = cache.genKey(query, lat, long, limit);
 
-  res.status(sug.length ? 200 : 404);
-  return res.end(output);
+  let output;
+  if (cache.exists(cacheKey) && !(useCache === 'false')) {
+    output = cache.get(cacheKey);
+  } else {
+    output = {suggestions: db.search(query, parseFloat(lat), parseFloat(long)).slice(0, limit)};
+
+    output.suggestions = output.suggestions.map((sug) => {
+      return {
+        id: sug.id,
+        name: sug.name,
+        lat: sug.latitude,
+        lang: sug.longitude,
+        stateOrProvince: sug.adminCodeUtf8,
+        country: sug.country,
+        distance: sug.distance,
+        population: sug.population,
+        score: sug.score
+      }
+    });
+
+    cache.set(cacheKey, output);
+  }
+
+  res.status(output.suggestions.length ? 200 : 404);
+  return res.json(output);
 });
 
 module.exports = suggestionsRouter;

@@ -1,18 +1,20 @@
 const fs = require('fs');
 const config = require('./config');
 const Fuse = require('fuse.js');
+// const levenshtein = require('./search');
+const jwDistance = require('./jaro-winkler');
+const coords = require('./coords');
 
 // Fuse options
 const options = {
-  caseSensitive: true,
-  shouldSort: true,
   tokenize: true,
+  // findAllMatches: true,
   includeScore: true,
   threshold: 0.3,
   location: 0,
-  distance: 100,
+  distance: 20,
   maxPatternLength: 32,
-  minMatchCharLength: 1,
+  minMatchCharLength: 4,
   keys: [
     "name",
     "asciiname",
@@ -20,66 +22,88 @@ const options = {
   ]
 };
 
+function isUndefined(arg) {
+  return typeof arg === 'undefined';
+}
+
 function DB(options) {
   this.__db = null;
 }
 
-DB.prototype.search = function(term) {
-  const results = this.fuse.search(term);
-  // 1. iterate over rows
-  // 2. see if asciiname or othernames matches (regex ?)
-  // 3. return if no matches
-  // 4. return the match accorinding to scoring algo
-  // with coordinates and unique id.
-  return results;
+DB.prototype.search = function(term, lat, long) {
+  const minMatchingScore = 0.6;
+  const weighted = [];
+  term = term.toLowerCase();
+
+  // Score, filter and clone the results in one shot.
+  this.__db.reduce((matches, city) => {
+    const haystack = city.asciiname.toLowerCase();
+    const match = Object.assign({}, city);
+
+    let distance;
+    if (!isUndefined(lat) && !isUndefined(long)) {
+      match.distance = Math.round(coords.dist(lat, long, city.latitude, city.longitude));
+    }
+
+    const score = scorer(
+      jwDistance(haystack, term),
+      city.population,
+      match.distance
+    );
+
+    if (score > minMatchingScore) {
+      match.score = score;
+      matches.push(match);
+    }
+
+    return matches;
+  }, weighted);
+
+  weighted.sort((a, b) => {
+    return b.score - a.score;
+  });
+
+  return weighted;
 }
 
+/**
+ * Load the database into memory.
+ *
+ * @return {DB} Returns the DB object.
+ */
 DB.prototype.load = function() {
   this.__db = require(config.dbFile);
-  this.fuse = new Fuse(this.__db, options);
 
   return this;
 }
 
-/**
- * This whole function would normally be a pretty bad idea
- * for parsing arbitrary .tsv files, but hey, the input is
- * fixed and normalized so we go with the simple solution.
- */
-// DB.prototype.parse = function(raw) {
-//   const rows = raw.split('\n');
-//   // Drop the header row.
-//   rows.shift();
+function scorer(ldist, population, distance) {
+  // Reduce the jaro-winkler score a little to give
+  // room for distance and population bonuses
+  // to float up.
+  let score = ldist - 0.1;
 
-//   const db = {};
-//   rows.forEach((r) => {
-//     const [
-//       id,
-//       name,
-//       asciiname,
-//       alternatenames,
-//       latitude,
-//       longitude,
-//       , ,
-//       countryCode,
-//       , , , , ,
-//       population
-//     ] = r.split('\t');
+  if (distance) {
+    if (distance <= 100) score += 0.17;
+    else if (distance <= 300) score += 0.12;
+    else if (distance <= 500) score += 0.05;
+    else if (distance <= 1000) score += 0.03;
+  }
 
-//     db[id] = {
-//       name,
-//       asciiname,
-//       alternatenames: alternatenames && alternatenames.split(','),
-//       latitude: parseFloat(latitude),
-//       longitude: parseFloat(longitude),
-//       countryCode,
-//       population: parseInt(population)
-//     };
-//   });
+  if (population) {
+    // Megapolis
+    if (population >= 5000000) score += 0.15;
+    // Cities
+    else if (population >= 1000000) score += 0.1;
+    // Mid-towns
+    else if (population >= 100000) score += 0.07;
+    // Small towns
+    else if (population >= 50000) score += 0.05;
+    // rural towns.
+    if (population >= 10000) score += 0.02;
+  }
 
-//   // console.log(db[Object.keys(db)[2]]);
-
-//   return db;
-// }
+  return score < 0 ? 0 : (score > 1 ? 1 : score);
+}
 
 module.exports = DB;
