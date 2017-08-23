@@ -3,6 +3,7 @@ const suggestionsRouter = express.Router();
 const db = new (require('./db'))();
 const cache = require('./cache');
 const config = require('./config');
+const os = require('os');
 db.load();
 
 suggestionsRouter.get('/suggestions', (req, res) => {
@@ -43,5 +44,19 @@ suggestionsRouter.get('/suggestions', (req, res) => {
   res.status(output.suggestions.length ? 200 : 404);
   return res.json(output);
 });
+
+suggestionsRouter.get('/machine-stats', (req, res) => {
+  res.json({
+    mem: process.memoryUsage(),
+    cpus: config.cpus,
+    uptime: process.uptime(),
+    cpuUsageTIme: process.cpuUsage(),
+    systemMem: {
+      freem: os.freemem() / 1e6,
+      total: os.totalmem() / 1e6
+    },
+    load: os.loadavg()
+  });
+})
 
 module.exports = suggestionsRouter;

@@ -1,9 +1,9 @@
 const cluster = require('cluster');
-const numCPUs = require('os').cpus().length;
 const http = require('http');
 const express = require('express');
 const port = process.env.PORT || 2345;
 const routes = require('./routes');
+const config = require('./config');
 
 // module.exports = app;
 
@@ -13,7 +13,7 @@ if (cluster.isMaster) {
 	console.log(`Master ${process.pid} is running`);
 
 	// Fork workers.
-	for (let i = 0; i < numCPUs; i++) {
+	for (let i = 0; i < config.cpus; i++) {
 		cluster.fork();
 	}
 
