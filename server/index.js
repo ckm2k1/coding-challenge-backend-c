@@ -1,7 +1,9 @@
+const isDev = process.env.NODE_ENV === 'development';
 const cluster = require('cluster');
 const http = require('http');
 const express = require('express');
 const port = process.env.PORT || 2345;
+const host = isDev ? '127.0.0.1' : '0.0.0.0';
 const routes = require('./routes');
 const config = require('./config');
 
@@ -9,7 +11,7 @@ const config = require('./config');
 
 // console.log('Server running at http://127.0.0.1:%d/suggestions', port);
 
-if (cluster.isMaster && process.env.NODE_ENV !== 'development') {
+if (cluster.isMaster && !isDev) {
 	console.log(`Master ${process.pid} is running`);
 
 	// Fork workers.
@@ -23,7 +25,7 @@ if (cluster.isMaster && process.env.NODE_ENV !== 'development') {
 } else {
 	const app = express();
 	app.use(routes);
-	app.listen(port, '127.0.0.1');
+	app.listen(port);
 
 	console.log(`Worker ${process.pid} started`);
 }
