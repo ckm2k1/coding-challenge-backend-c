@@ -25,7 +25,7 @@ if (cluster.isMaster && !isDev) {
 } else {
 	const app = express();
 	app.use(routes);
-	app.listen(port);
+	app.listen(port, host);
 
 	console.log(`Worker ${process.pid} started`);
 }
