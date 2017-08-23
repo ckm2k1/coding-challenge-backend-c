@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server",
     "dev": "nodemon server",
+    "bench": "env NODE_ENV=ci node server",
     "debug": "node --inspect server",
     "test": "./node_modules/mocha/bin/mocha ./test/"
   },

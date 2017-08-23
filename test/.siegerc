@@ -1,6 +1,6 @@
 benchmark = false
 delay = 0.2
 time = 15s
-concurrent = 200
+concurrent = 500
 internet = true
 spinner = true

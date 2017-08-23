@@ -7,9 +7,7 @@ const host = isDev ? '127.0.0.1' : '0.0.0.0';
 const routes = require('./routes');
 const config = require('./config');
 
-// module.exports = app;
 isDev && console.log('Running in DEV mode');
-// console.log('Server running at http://127.0.0.1:%d/suggestions', port);
 
 if (cluster.isMaster && !isDev) {
 	console.log(`Master ${process.pid} is running`);
