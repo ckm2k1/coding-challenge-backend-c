@@ -8,14 +8,15 @@
     "dev": "nodemon server",
     "test": "./node_modules/mocha/bin/mocha ./test/"
   },
-  "author": "",
+  "author": "Steve",
   "license": "WTFPL",
-  "dependencies": {
+  "devDependencies": {
     "chai": "^1.9.1",
-    "express": "^4.15.4",
-    "fuse.js": "^3.0.5",
     "mocha": "^1.18.2",
     "supertest": "^0.11.0"
+  },
+  "dependencies": {
+    "express": "4.15.4"
   },
   "engines": {
     "node": "8.3.0"

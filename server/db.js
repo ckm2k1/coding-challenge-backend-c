@@ -1,26 +1,7 @@
 const fs = require('fs');
 const config = require('./config');
-const Fuse = require('fuse.js');
-// const levenshtein = require('./search');
 const jwDistance = require('./jaro-winkler');
 const coords = require('./coords');
-
-// Fuse options
-const options = {
-  tokenize: true,
-  // findAllMatches: true,
-  includeScore: true,
-  threshold: 0.3,
-  location: 0,
-  distance: 20,
-  maxPatternLength: 32,
-  minMatchCharLength: 4,
-  keys: [
-    "name",
-    "asciiname",
-    "alternatenames"
-  ]
-};
 
 function isUndefined(arg) {
   return typeof arg === 'undefined';
