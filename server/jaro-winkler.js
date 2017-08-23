@@ -74,4 +74,3 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
 
   return weight;
 }
-

@@ -9,7 +9,7 @@ const config = require('./config');
 
 // console.log('Server running at http://127.0.0.1:%d/suggestions', port);
 
-if (cluster.isMaster) {
+if (cluster.isMaster && process.env.NODE_ENV !== 'development') {
 	console.log(`Master ${process.pid} is running`);
 
 	// Fork workers.
