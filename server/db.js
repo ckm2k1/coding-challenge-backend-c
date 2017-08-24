@@ -7,12 +7,13 @@ function isUndefined(arg) {
   return typeof arg === 'undefined';
 }
 
+const MIN_MATCHING_SCORE = 0.6;
+
 function DB(options) {
   this.__db = null;
 }
 
 DB.prototype.search = function(term, lat, long) {
-  const minMatchingScore = 0.6;
   const weighted = [];
   term = term.toLowerCase();
 
@@ -32,7 +33,7 @@ DB.prototype.search = function(term, lat, long) {
       match.distance
     );
 
-    if (score > minMatchingScore) {
+    if (score > MIN_MATCHING_SCORE) {
       match.score = score;
       matches.push(match);
     }

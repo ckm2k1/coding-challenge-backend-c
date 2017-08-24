@@ -8,7 +8,9 @@
     "dev": "nodemon server",
     "bench": "env NODE_ENV=ci node server",
     "debug": "node --inspect server",
-    "test": "./node_modules/mocha/bin/mocha ./test/"
+    "test": "./node_modules/mocha/bin/mocha ./test/",
+    "benchmark": "siege -R ./test/.siegerc -f ./test/urls.txt",
+    "benchmark-cached": "siege -R ./test/.siegerc -f ./test/urls-with-cache.txt"
   },
   "author": "Steve",
   "license": "WTFPL",
@@ -18,7 +20,8 @@
     "supertest": "^0.11.0"
   },
   "dependencies": {
-    "express": "4.15.4"
+    "express": "4.15.4",
+    "memored": "^1.1.1"
   },
   "engines": {
     "node": "8.3.0"

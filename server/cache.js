@@ -9,18 +9,20 @@ module.exports.genKey = function(...args) {
   return hash.update(input).digest('hex');
 }
 
-module.exports.get = function(key) {
-  return __cache[key];
+module.exports.read = function(key, callback) {
+  setTimeout(() => {
+     callback(null, __cache[key]);
+  }, 0);
 }
 
-module.exports.set = function(key, val) {
+module.exports.store = function(key, val, callback = () => {}) {
   __cache[key] = val;
+  setTimeout(callback, 0);
 }
 
 module.exports.exists = function(key) {
   return typeof __cache[key] !== 'undefined';
 }
-
 
 module.exports.clear = function() {
   __cache = {};

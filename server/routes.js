@@ -6,23 +6,39 @@ const config = require('./config');
 const os = require('os');
 db.load();
 
-suggestionsRouter.get('/suggestions', (req, res) => {
+suggestionsRouter.use((req, res, next) => {
   const {q: query, lat, long, ['use-cache']: useCache = true, limit = config.search.minResults} = req.query;
 
   if (!query) {
-    res.status(400);
-    return res.end(JSON.stringify({
-      error: 'Empty query'
-    }));
+    throw new Error('Empty query');
   }
 
-  const cacheKey = cache.genKey(query, lat, long, limit);
+  Object.assign(res.locals, {query, lat, long, useCache, limit});
 
-  let output;
-  if (cache.exists(cacheKey) && !(useCache === 'false')) {
-    output = cache.get(cacheKey);
-  } else {
-    output = {suggestions: db.search(query, parseFloat(lat), parseFloat(long)).slice(0, limit)};
+  res.locals.cacheKey = cache.genKey(query, lat, long, limit);
+
+  if (useCache === true) {
+    req.app.locals.cache.read(res.locals.cacheKey, (err, cachedValue) => {
+      // if (cachedValue) console.log('CACHE HIT', res.locals.cacheKey);
+
+      return cachedValue ?
+        sendResponse(res, cachedValue).end() :
+        next();
+    });
+  } else return next();
+});
+
+suggestionsRouter.get('/suggestions', (req, res, next) => {
+  const { query, lat, long, limit, cacheKey } = res.locals;
+
+  const output = searchDB(query, lat, long, limit);
+
+  req.app.locals.cache.store(cacheKey, output);
+  sendResponse(res, output).end();
+});
+
+function searchDB(query, lat, long, limit) {
+  const output = {suggestions: db.search(query, parseFloat(lat), parseFloat(long)).slice(0, limit)};
 
     output.suggestions = output.suggestions.map((sug) => {
       return {
@@ -38,12 +54,19 @@ suggestionsRouter.get('/suggestions', (req, res) => {
       }
     });
 
-    cache.set(cacheKey, output);
-  }
+    return output;
+}
+
+function sendResponse(res, output) {
+  // Close connections immediately since
+  // we won't have any futher interaction with
+  // the client and we want to hurry up and move
+  // on to the next request.
+  res.setHeader('Connection', 'close');
 
   res.status(output.suggestions.length ? 200 : 404);
   return res.json(output);
-});
+}
 
 suggestionsRouter.get('/machine-stats', (req, res) => {
   res.json({
