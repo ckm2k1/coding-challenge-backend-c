@@ -28,7 +28,7 @@ suggestionsRouter.use((req, res, next) => {
   } else return next();
 });
 
-suggestionsRouter.get('/suggestions', (req, res, next) => {
+suggestionsRouter.get('/suggestions', (req, res) => {
   const { query, lat, long, limit, cacheKey } = res.locals;
 
   const output = searchDB(query, lat, long, limit);

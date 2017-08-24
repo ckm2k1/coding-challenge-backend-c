@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const __cache = {};
+let __cache = {};
 
 module.exports.genKey = function(...args) {
   const hash = crypto.createHash('sha256');

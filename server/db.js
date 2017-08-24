@@ -1,4 +1,3 @@
-const fs = require('fs');
 const config = require('./config');
 const jwDistance = require('./jaro-winkler');
 const coords = require('./coords');
@@ -9,7 +8,7 @@ function isUndefined(arg) {
 
 const MIN_MATCHING_SCORE = 0.6;
 
-function DB(options) {
+function DB() {
   this.__db = null;
 }
 
@@ -22,7 +21,6 @@ DB.prototype.search = function(term, lat, long) {
     const haystack = city.asciiname.toLowerCase();
     const match = Object.assign({}, city);
 
-    let distance;
     if (!isUndefined(lat) && !isUndefined(long)) {
       match.distance = Math.round(coords.dist(lat, long, city.latitude, city.longitude));
     }
