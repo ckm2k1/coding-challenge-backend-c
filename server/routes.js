@@ -6,7 +6,7 @@ const config = require('./config');
 const os = require('os');
 db.load();
 
-suggestionsRouter.use((req, res, next) => {
+suggestionsRouter.get('/suggestions', (req, res, next) => {
   const {q: query, lat, long, ['use-cache']: useCache = true, limit = config.search.minResults} = req.query;
 
   if (!query) {
@@ -26,9 +26,7 @@ suggestionsRouter.use((req, res, next) => {
         next();
     });
   } else return next();
-});
-
-suggestionsRouter.get('/suggestions', (req, res) => {
+}, (req, res) => {
   const { query, lat, long, limit, cacheKey } = res.locals;
 
   const output = searchDB(query, lat, long, limit);
@@ -45,7 +43,7 @@ function searchDB(query, lat, long, limit) {
         id: sug.id,
         name: sug.name,
         lat: sug.latitude,
-        lang: sug.longitude,
+        long: sug.longitude,
         stateOrProvince: sug.adminCodeUtf8,
         country: sug.country,
         distance: sug.distance,

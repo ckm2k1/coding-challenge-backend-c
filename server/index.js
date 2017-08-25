@@ -35,6 +35,7 @@ if (cluster.isMaster && !config.isDev) {
 } else {
 	const app = express();
 	app.locals.cache = cache;
+	app.use(express.static('public'));
 	app.use(routes);
 
 	app.listen(port);
