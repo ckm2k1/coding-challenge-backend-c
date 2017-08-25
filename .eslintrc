@@ -17,6 +17,7 @@
     },
     "globals": {
       "ReactDOM": true,
-      "React": true
+      "React": true,
+      "_": true
     }
 }

@@ -6,21 +6,26 @@ class SearchBox extends React.Component {
 
     this.state = {
       suggestions: [],
-      open: false,
-      value: ''
+      open: false
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this._debouncedOnChange = _.debounce(this._debouncedOnChange.bind(this), 250);
   }
 
   async handleChange(event) {
-    const value = event.target.value;
+    event.persist();
+    this._debouncedOnChange(event.target.value);
+  }
 
+  async _debouncedOnChange(value) {
     if (value && value.length > 3) {
-      let apiUrl = `/suggestions?q=${encodeURIComponent(event.target.value)}`;
+
+      let apiUrl = `/suggestions?q=${encodeURIComponent(value)}`;
       if (userLocation) {
         apiUrl = `${apiUrl}&lat=${userLocation.lat}&long=${userLocation.long}`;
       }
+
       const res = await fetch(apiUrl);
       const json = await res.json();
 
@@ -39,7 +44,7 @@ class SearchBox extends React.Component {
     return React.createElement(
       "div",
       null,
-      React.createElement("input", { type: "text", className: "search-box", onChange: this.handleChange, value: this.state.value, autoFocus: true }),
+      React.createElement("input", { type: "text", className: "search-box", onChange: this.handleChange, autoFocus: true }),
       React.createElement(SuggestionsDropDown, { className: 'suggestions-dropdown' + (this.state.open ? 'show' : ''), suggestions: this.state.suggestions })
     );
   }

@@ -64,7 +64,7 @@ function scorer(ldist, population, distance) {
   // Reduce the jaro-winkler score a little to give
   // room for distance and population bonuses
   // to float up.
-  let score = ldist - 0.1;
+  let score = ldist - 0.15;
 
   if (distance) {
     // Very close
