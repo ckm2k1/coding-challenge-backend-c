@@ -10,7 +10,8 @@
     "debug": "node --inspect server",
     "test": "./node_modules/mocha/bin/mocha ./test/",
     "benchmark": "siege -R ./test/.siegerc -f ./test/urls.txt",
-    "benchmark-cached": "siege -R ./test/.siegerc -f ./test/urls-with-cache.txt"
+    "benchmark-cached": "siege -R ./test/.siegerc -f ./test/urls-with-cache.txt",
+    "dev-ui": "./node_modules/.bin/babel --presets react --watch ./frontend --out-dir ./public"
   },
   "author": "Steve",
   "license": "WTFPL",
@@ -20,6 +21,8 @@
     "supertest": "^0.11.0"
   },
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react": "^6.24.1",
     "express": "4.15.4",
     "memored": "^1.1.1"
   },

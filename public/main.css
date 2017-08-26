@@ -18,9 +18,13 @@
   margin: 0 auto;
   outline: none;
   padding-left: 0.5rem;
-  border: 1px solid #60d8ff;
+  border: 1px solid #e1e1e1;
   box-shadow: 0 0 3px #eee;
 }
+
+ .search-box:focus {
+   border-color: #60d8ff;
+ }
 
 .suggestions-list {
   list-style: none;
@@ -28,18 +32,15 @@
   padding: 0;
 }
 
+
 .suggestions-item {
   font-size: 1.6rem;
   border: 1px solid #eee;
   border-bottom: none;
-  padding: 1rem 0.5rem;
   position: relative;
+  display: flex;
 }
 
-.suggestions-item:hover {
-  background-color: #60d8ff;
-  color: #fff;
-}
 
 .suggestions-item:first-child {
   border-top: none;
@@ -49,12 +50,33 @@
   border-bottom: 1px solid #bbb;
 }
 
+.suggestions-item:hover {
+  background-color: #60d8ff;
+  color: #fff;
+}
+
+.suggestions-item span {
+  padding: 0.7rem;
+}
+
+.suggestions-item .score {
+  font-weight: lighter;
+  font-size: 1rem;
+  color: white;
+  background: dodgerblue;
+  width: 5.5rem;
+  text-align: center;
+}
+
+.suggestions-item .content {
+  margin-left: 3rem;
+}
+
 .suggestions-item .coords {
   position: absolute;
   right: 1rem;
-  line-height: 1.6rem;
   font-style: italic;
-  font-weight: 700;
-  font-size: 1.2rem;
+  font-weight: lighter;
+  font-size: 1rem;
   color: #ccc;
 }

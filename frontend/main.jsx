@@ -5,36 +5,17 @@ class SuggestionsDropDown extends React.Component {
     const children = this.props.suggestions.map(s => {
       const coords = s.distance !== null ? `(${s.distance}km)` : `(${s.lat.toFixed(2)}, ${s.long.toFixed(2)})`;
 
-      return React.createElement(
-        "li",
-        { className: "suggestions-item", key: s.id },
-        React.createElement(
-          "span",
-          { className: "score" },
-          (s.score * 100).toFixed(2),
-          "%"
-        ),
-        React.createElement(
-          "span",
-          { className: "content" },
-          s.name,
-          ", ",
-          s.stateOrProvince,
-          ", ",
-          s.country
-        ),
-        React.createElement(
-          "span",
-          { className: "coords" },
-          coords
-        )
+      return (
+        <li className="suggestions-item"  key={s.id}>
+          <span className="score">{(s.score * 100).toFixed(2)}%</span>
+          <span className="content">{s.name}, {s.stateOrProvince}, {s.country}</span>
+          <span className="coords">{coords}</span>
+        </li>
       );
     });
 
-    return React.createElement(
-      "ul",
-      { className: "suggestions-list" },
-      children
+    return (
+      <ul className="suggestions-list">{children}</ul>
     );
   }
 }
@@ -83,11 +64,11 @@ class SearchBox extends React.Component {
   }
 
   render() {
-    return React.createElement(
-      "div",
-      null,
-      React.createElement("input", { type: "text", className: "search-box", onChange: this.handleChange, autoFocus: true }),
-      React.createElement(SuggestionsDropDown, { className: 'suggestions-dropdown' + (this.state.open ? 'show' : ''), suggestions: this.state.suggestions })
+    return (
+      <div>
+        <input type="text" className="search-box" onChange={this.handleChange} autoFocus />
+        <SuggestionsDropDown className={'suggestions-dropdown' + (this.state.open ? 'show' : '')} suggestions={this.state.suggestions} />
+      </div>
     );
   }
 }
