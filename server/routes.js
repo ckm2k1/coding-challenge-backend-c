@@ -19,8 +19,6 @@ suggestionsRouter.get('/suggestions', (req, res, next) => {
 
   if (useCache === true) {
     req.app.locals.cache.read(res.locals.cacheKey, (err, cachedValue) => {
-      // if (cachedValue) console.log('CACHE HIT', res.locals.cacheKey);
-
       return cachedValue ?
         sendResponse(res, cachedValue).end() :
         next();
@@ -33,6 +31,16 @@ suggestionsRouter.get('/suggestions', (req, res, next) => {
 
   req.app.locals.cache.store(cacheKey, output);
   sendResponse(res, output).end();
+}, (err, req, res, next) => {
+  if (err.message === 'Empty query') {
+    res.status(404);
+    return res.json({
+      error: err.message
+    });
+  }
+
+  res.status(500);
+  res.end();
 });
 
 function searchDB(query, lat, long, limit) {
