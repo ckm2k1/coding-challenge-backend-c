@@ -1,6 +1,5 @@
 const config = require('./config');
-// const jwDistance = require('./jaro-winkler');
-const jwDistance = require('./jw');
+const jwDistance = require('./jaro-winkler');
 const coords = require('./coords');
 
 function isUndefined(arg) {

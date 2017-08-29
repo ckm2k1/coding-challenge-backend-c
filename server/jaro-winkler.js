@@ -35,6 +35,7 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
       }
     }
   }
+  // console.log(s1Matches, s2Matches, m);
 
   // Exit early if no matches were found.
   if (m === 0) {
@@ -59,6 +60,7 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
       }
     }
   }
+  // console.log(numTrans);
 
   var weight = (m / s1.length + m / s2.length + (m - (numTrans / 2)) / m) / 3;
   var l = 0;

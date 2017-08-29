@@ -67,10 +67,9 @@ class SearchBox extends React.Component {
       const res = await fetch(apiUrl);
       const json = await res.json();
 
-      if (json && json.suggestions.length) {
+      if (json && !json.error) {
         this.setState({
-          suggestions: json.suggestions,
-          open: true
+          suggestions: json.suggestions
         });
       }
     } else {
