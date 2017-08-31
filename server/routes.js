@@ -50,6 +50,7 @@ function searchDB(query, lat, long, limit) {
       return {
         id: sug.id,
         name: sug.name,
+        asciiname: sug.asciiname,
         lat: sug.latitude,
         long: sug.longitude,
         stateOrProvince: sug.adminCodeUtf8,

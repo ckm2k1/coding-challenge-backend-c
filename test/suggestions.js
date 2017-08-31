@@ -1,6 +1,7 @@
 var expect = require('chai').expect;
-var app = require('../server');
-var request = require('supertest')(app);
+var app = require('../server/express');
+var cache = require('../server/cache');
+var request = require('supertest')(app.init(cache, 1234));
 
 describe('GET /suggestions', function() {
 	describe('with a non-existent city', function() {
@@ -8,7 +9,7 @@ describe('GET /suggestions', function() {
 
 		before(function(done) {
 			request
-				.get('/suggestions?q=SomeRandomCityInTheMiddleOfNowhere')
+				.get('/suggestions?q=asdfasdfasdfasdfasdfasdfasdf')
 				.end(function(err, res) {
 					response = res;
 					response.json = JSON.parse(res.text);
@@ -51,8 +52,7 @@ describe('GET /suggestions', function() {
 		it('contains a match', function() {
 			expect(response.json.suggestions).to.satisfy(function(suggestions) {
 				return suggestions.some(function(suggestion) {
-					// console.log(suggestion.item);
-					return /montreal/i.test(suggestion.item.asciiname);
+					return /montreal/i.test(suggestion.asciiname);
 				});
 			})
 		});
@@ -60,7 +60,7 @@ describe('GET /suggestions', function() {
 		it('contains latitudes and longitudes', function() {
 			expect(response.json.suggestions).to.satisfy(function(suggestions) {
 				return suggestions.every(function(suggestion) {
-					return suggestion.item.latitude && suggestion.item.longitude;
+					return suggestion.lat && suggestion.long;
 				});
 			})
 		});

@@ -1,9 +1,8 @@
 const cluster = require('cluster');
-const express = require('express');
 const port = process.env.PORT || 2345;
-const routes = require('./routes');
 const config = require('./config');
 const cache = config.isDev ? require('./cache') : require('memored');
+const app = require('./express');
 
 config.isDev && console.log('Running in DEV mode');
 
@@ -17,7 +16,6 @@ if (cluster.isMaster && !config.isDev) {
 
 	console.log(`Master ${process.pid} is running`);
 
-	// Fork workers.
 	for (let i = 0; i < config.cpus; i++) {
 		cluster.fork();
 	}
@@ -33,13 +31,7 @@ if (cluster.isMaster && !config.isDev) {
 		console.log(`worker ${worker.process.pid} died`);
 	});
 } else {
-	const app = express();
-	app.locals.cache = cache;
-	app.use(express.static('public'));
-	app.use(routes);
-
-	app.listen(port);
-	console.log(`Worker ${process.pid} started, listening on ${port}`);
+	app.init(cache, port);
 }
 
 function computeRequestStats() {
