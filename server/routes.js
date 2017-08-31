@@ -89,4 +89,9 @@ suggestionsRouter.get('/machine-stats', (req, res) => {
   });
 })
 
+suggestionsRouter.get('/worker-stats', (req, res) => {
+  process.send({type: 'print-stats'});
+  res.end();
+});
+
 module.exports = suggestionsRouter;

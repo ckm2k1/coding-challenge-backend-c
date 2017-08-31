@@ -8,7 +8,7 @@
     "dev": "nodemon server",
     "debug": "node --inspect server",
     "test": "./node_modules/mocha/bin/mocha ./test/",
-    "bench": "env NODE_ENV=ci node server",
+    "loadtest": "env NODE_ENV=ci node server",
     "benchmark": "siege -R ./test/.siegerc -f ./test/urls.txt",
     "benchmark-cached": "siege -R ./test/.siegerc -f ./test/urls-with-cache.txt",
     "dev-ui": "./node_modules/.bin/babel --presets react ./frontend --out-dir ./public",
