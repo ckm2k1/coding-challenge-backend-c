@@ -1,5 +1,12 @@
 let userLocation = null;
 
+// Round floats to 2 decimal places. We do this because
+// the server caches hits using coords and we don't want a single
+// digit difference in the coords to cause a new cache entry.
+function roundToTwo(num) {
+    return +(Math.round(num + 'e+2')  + 'e-2');
+}
+
 class SuggestionsDropDown extends React.Component {
   render() {
     const children = this.props.suggestions.map(s => {
@@ -77,8 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   navigator.geolocation.getCurrentPosition(response => {
     userLocation = {
-      lat: response.coords.latitude,
-      long: response.coords.longitude
+      lat: roundToTwo(response.coords.latitude),
+      long: roundToTwo(response.coords.longitude)
     };
   });
 });
