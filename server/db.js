@@ -13,38 +13,43 @@ class DB {
     this.__db = null;
   }
 
-  search(term, lat, long) {
-    const weighted = [];
-    term = term.toLowerCase();
+  search(term, lat = null, long = null, sort = true) {
+    return Promise.resolve()
+      .then(() => {
+        const weighted = [];
+        term = term.toLowerCase();
 
-    // Score, filter and clone the results in one shot.
-    this.__db.reduce((matches, city) => {
-      const haystack = city.asciiname.toLowerCase();
-      const match = Object.assign({}, city);
+        // Score, filter and clone the results in one shot.
+        this.__db.reduce((matches, city) => {
+          const haystack = city.asciiname.toLowerCase();
+          const match = Object.assign({}, city);
 
-      if (!isUndefined(lat) && !isUndefined(long)) {
-        match.distance = Math.round(coords.dist(lat, long, city.latitude, city.longitude));
-      }
+          if (!isUndefined(lat) && !isUndefined(long)) {
+            match.distance = Math.round(coords.dist(lat, long, city.latitude, city.longitude));
+          }
 
-      const score = scorer(
-        jwDistance(haystack, term),
-        city.population,
-        match.distance
-      );
+          const score = scorer(
+            jwDistance(haystack, term),
+            city.population,
+            match.distance
+          );
 
-      if (score > MIN_MATCHING_SCORE) {
-        match.score = score;
-        matches.push(match);
-      }
+          if (score > MIN_MATCHING_SCORE) {
+            match.score = score;
+            matches.push(match);
+          }
 
-      return matches;
-    }, weighted);
+          return matches;
+        }, weighted);
 
-    weighted.sort((a, b) => {
-      return b.score - a.score;
-    });
+        if (sort) {
+          weighted.sort((a, b) => {
+            return b.score - a.score;
+          });
+        }
 
-    return weighted;
+        return weighted;
+      });
   }
 
   /**

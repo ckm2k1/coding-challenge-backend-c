@@ -24,10 +24,10 @@ suggestionsRouter.get('/suggestions', (req, res, next) => {
         next();
     });
   } else return next();
-}, (req, res) => {
+}, async (req, res) => {
   const { query, lat, long, limit, cacheKey } = res.locals;
 
-  const output = searchDB(query, lat, long, limit);
+  const output = await searchDB(query, lat, long, limit);
 
   req.app.locals.cache.store(cacheKey, output);
   sendResponse(res, output).end();
@@ -43,8 +43,9 @@ suggestionsRouter.get('/suggestions', (req, res, next) => {
   res.end();
 });
 
-function searchDB(query, lat, long, limit) {
-  const output = {suggestions: db.search(query, parseFloat(lat), parseFloat(long)).slice(0, limit)};
+async function searchDB(query, lat, long, limit) {
+  const results = await db.search(query, parseFloat(lat), parseFloat(long));
+  const output = { suggestions: results.slice(0, limit) };
 
     output.suggestions = output.suggestions.map((sug) => {
       return {
