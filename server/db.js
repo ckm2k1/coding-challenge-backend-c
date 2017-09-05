@@ -22,21 +22,20 @@ class DB {
         // Score, filter and clone the results in one shot.
         this.__db.reduce((matches, city) => {
           const haystack = city.asciiname.toLowerCase();
-          const match = Object.assign({}, city);
 
+          let distance;
           if (!isUndefined(lat) && !isUndefined(long)) {
-            match.distance = Math.round(coords.dist(lat, long, city.latitude, city.longitude));
+            distance = Math.round(coords.dist(lat, long, city.latitude, city.longitude));
           }
 
           const score = scorer(
-            jwDistance(haystack, term),
+            jwDistance(term, haystack),
             city.population,
-            match.distance
+            distance
           );
 
-          if (score > MIN_MATCHING_SCORE) {
-            match.score = score;
-            matches.push(match);
+          if (score.score > MIN_MATCHING_SCORE) {
+            matches.push(Object.assign({comps: score, score: score.score, distance}, city));
           }
 
           return matches;
@@ -44,7 +43,11 @@ class DB {
 
         if (sort) {
           weighted.sort((a, b) => {
-            return b.score - a.score;
+            const scoreDiff = b.score - a.score;
+            // Sort by closest distance if the score is the same.
+            return scoreDiff === 0 && b.distance ?
+              a.distance - b.distance :
+              scoreDiff;
           });
         }
 
@@ -66,37 +69,55 @@ class DB {
 
 
 function scorer(ldist, population, distance) {
+  const sc = {
+    ldist: 0,
+    score: 0,
+    distance: 0,
+    population: 0
+  };
+
   // Reduce the jaro-winkler score to give
   // room for distance and population bonuses
   // to float results up.
-  let score = ldist - 0.15;
+  let score = ldist - 0.1;
+  sc.ldist = score;
 
   if (distance) {
+    let ds = 0;
     // Very close
-    if (distance <= 100) score += 0.06;
+    if (distance <= 100) ds += 0.05;
     // Reasonably close
-    else if (distance <= 300) score += 0.03;
+    else if (distance <= 300) ds += 0.03;
     // Road trip
-    else if (distance <= 500) score += 0.02;
+    else if (distance <= 500) ds += 0.02;
     // Serious road trip
-    else if (distance <= 1000) score += 0.01;
+    else if (distance <= 1000) ds += 0.01;
+
+    score += ds;
+    sc.distance = ds;
   }
 
   if (population) {
+    let ps = 0;
+
     // Megapolis
-    if (population >= 5000000) score += 0.06;
+    if (population >= 5000000) ps = 0.07;
     // Cities
-    else if (population >= 1000000) score += 0.05;
+    else if (population >= 1000000) ps = 0.05;
     // Mid-towns
-    else if (population >= 100000) score += 0.04;
+    else if (population >= 100000) ps = 0.03;
     // Small towns
-    else if (population >= 50000) score += 0.02;
+    else if (population >= 50000) ps = 0.0;
     // rural towns.
-    if (population >= 10000) score += 0.01;
+    else if (population >= 10000) ps = 0.01;
+
+    score += ps;
+    sc.population = ps;
   }
 
   // Normalize
-  return score < 0 ? 0 : (score > 1 ? 1 : score);
+  sc.score = score < 0 ? 0 : (score > 1 ? 1 : score);
+  return sc;
 }
 
 module.exports = DB;

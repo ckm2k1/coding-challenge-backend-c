@@ -58,7 +58,8 @@ async function searchDB(query, lat, long, limit) {
         country: sug.country,
         distance: sug.distance,
         population: sug.population,
-        score: sug.score
+        score: sug.score,
+        comps: sug.comps
       }
     });
 

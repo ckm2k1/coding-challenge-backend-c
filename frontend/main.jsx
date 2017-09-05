@@ -46,7 +46,7 @@ class SearchBox extends React.Component {
   }
 
   async _debouncedOnChange(value) {
-    if (value && value.length > 3) {
+    if (value && value.length >= 3) {
       let apiUrl = `/suggestions?q=${encodeURIComponent(value)}`;
       if (userLocation) {
         apiUrl = `${apiUrl}&lat=${userLocation.lat}&long=${userLocation.long}`;

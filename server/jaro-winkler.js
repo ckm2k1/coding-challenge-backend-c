@@ -1,10 +1,11 @@
 module.exports = function distance(s1, s2, caseSensitive = false) {
-  var m = 0;
-  var i;
-  var j;
+  var matchingChars = 0;
+  var s1Length = s1.length;
+  var s2Length = s2.length;
+  var shortestLength = Math.min(s1Length, s2Length);
 
   // Exit early if either are empty.
-  if (s1.length === 0 || s2.length === 0) {
+  if (s1Length === 0 || s2Length === 0) {
     return 0;
   }
 
@@ -19,26 +20,25 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
     return 1;
   }
 
-  var range = (Math.floor(Math.max(s1.length, s2.length) / 2)) - 1;
-  var s1Matches = new Array(s1.length);
-  var s2Matches = new Array(s2.length);
+  var range = (Math.floor(Math.max(s1Length, s2Length) / 2)) - 1;
+  var s1Matches = new Array(s1Length);
+  var s2Matches = new Array(s2Length);
 
-  for (i = 0; i < s1.length; i++) {
+  for (let i = 0; i < s1Length; i++) {
     var low  = (i >= range) ? i - range : 0;
-    var high = (i + range <= (s2.length - 1)) ? (i + range) : (s2.length - 1);
+    var high = (i + range <= (s2Length - 1)) ? (i + range) : (s2Length - 1);
 
-    for (j = low; j <= high; j++) {
+    for (let j = low; j <= high; j++) {
       if (s1Matches[i] !== true && s2Matches[j] !== true && s1[i] === s2[j]) {
-        ++m;
+        ++matchingChars;
         s1Matches[i] = s2Matches[j] = true;
         break;
       }
     }
   }
-  // console.log(s1Matches, s2Matches, m);
 
   // Exit early if no matches were found.
-  if (m === 0) {
+  if (matchingChars === 0) {
     return 0;
   }
 
@@ -46,9 +46,10 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
   var k = 0;
   var numTrans = 0;
 
-  for (i = 0; i < s1.length; i++) {
+  for (let i = 0; i < s1Length; i++) {
     if (s1Matches[i] === true) {
-      for (j = k; j < s2.length; j++) {
+      let j;
+      for (j = k; j < s2Length; j++) {
         if (s2Matches[j] === true) {
           k = j + 1;
           break;
@@ -62,16 +63,17 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
   }
   // console.log(numTrans);
 
-  var weight = (m / s1.length + m / s2.length + (m - (numTrans / 2)) / m) / 3;
-  var l = 0;
+  var weight = (matchingChars / s1Length + matchingChars / s2Length + (matchingChars - (numTrans / 2)) / matchingChars) / 3;
+  var l;
   var p = 0.1;
 
   if (weight > 0.7) {
-    while (s1[l] === s2[l] && l < 4) {
-      ++l;
-    }
+    var smaller = shortestLength >= 4 ? 4 : shortestLength;
+    for(l = 0; (l < smaller) && (s1[l] === s2[l]); l++);
 
-    weight = weight + l * p * (1 - weight);
+    if (l) {
+      weight += l * p * (1 - weight);
+    }
   }
 
   return weight;
