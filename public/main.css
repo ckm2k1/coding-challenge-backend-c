@@ -22,6 +22,13 @@
   top: 0;
 }
 
+.loading span {
+  font-size: 2.4rem;
+  font-style: italic;
+  font-weight: lighter;
+  flex-basis: 35%;
+}
+
 .search-box {
   display: block;
   width: 100%;
@@ -86,6 +93,7 @@
 .suggestions-item .content {
   padding-left: 2rem;
   flex-grow: 2;
+  font-weight: lighter;
 }
 
 .suggestions-item:hover .coords {

@@ -13,7 +13,7 @@ class BreakdownDrawer extends React.Component {
 
     return (
       <div className={['breakdown', visibilityClass].join(' ')}>
-        <span>Population: {this.props.popl.toFixed(2)}</span>
+        <span>Population: {this.props.pscore.toFixed(2)}, ({this.props.popl.toLocaleString()})</span>
         <span>Distance: {this.props.distance.toFixed(2)}</span>
         <span>Jaro-Winkler: {this.props.ldist.toFixed(2)}</span>
       </div>
@@ -58,7 +58,8 @@ class SuggestionItem extends React.Component {
       <BreakdownDrawer
         visible={this.state.showDrawer}
         distance={this.props.comps.distance}
-        popl={this.props.comps.population}
+        popl={this.props.population}
+        pscore={this.props.comps.population}
         ldist={this.props.comps.ldist}
       />
     </li>);
@@ -132,13 +133,29 @@ class SearchBox extends React.Component {
   }
 }
 
+/**
+ * Main app component used to load user location and
+ * show loading screen.
+ */
 class App extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      loading: true
+      loading: true,
+      dots: '',
+      timer: null,
+      dotUpdateInterval: 400 //in milli.
     };
+  }
+
+  updateDots() {
+    this.setState((prevState) => {
+      const dotLength = prevState.dots.length;
+      return {
+        dots: dotLength === 3 ? '' : prevState.dots + '.'
+      };
+    });
   }
 
   componentDidMount() {
@@ -156,11 +173,25 @@ class App extends React.Component {
         loading: false
       });
     });
+
+    if (!this.state.timer) {
+      this.setState({
+        timer: setInterval(this.updateDots.bind(this), this.state.dotUpdateInterval)
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.timer);
   }
 
   render() {
     if (this.state.loading) {
-      return (<div className="loading">Geolocating, please hold...</div>);
+      return (
+        <div className="loading">
+          <span>Geolocating, please hold{this.state.dots || '\u00a0'}</span>
+        </div>
+      );
     }
 
     return (<SearchBox />);

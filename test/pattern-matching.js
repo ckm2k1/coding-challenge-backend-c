@@ -32,6 +32,16 @@ const known = [{
   term: 'Agdene',
   match: 'Ogden',
   score: 0.82
+}, {
+  // Severe transposition (very common with dyslexia)
+  term: 'vacnuoer',
+  match: 'Vancouver',
+  score: 0.90
+}, {
+  // transposition, miss-spelling, missing letters
+  term: 'Tmsmanig',
+  match: 'Temiskaming',
+  score: 0.84
 }]
 
 describe('Jaro-Winkler Pattern Matching', () => {
