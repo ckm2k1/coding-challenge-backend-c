@@ -35,11 +35,11 @@ module.exports = function scorer(ldist, population, distance) {
     // Megapolis
     if (population >= 5000000) ps = 0.07;
     // Cities
-    else if (population >= 1000000) ps = 0.05;
+    else if (population >= 1000000) ps = 0.06;
     // Mid-towns
-    else if (population >= 100000) ps = 0.03;
+    else if (population >= 100000) ps = 0.04;
     // Small towns
-    else if (population >= 50000) ps = 0.0;
+    else if (population >= 50000) ps = 0.03;
     // rural towns.
     else if (population >= 10000) ps = 0.01;
 

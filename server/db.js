@@ -7,7 +7,7 @@ function isUndefined(arg) {
   return typeof arg === 'undefined';
 }
 
-const MIN_MATCHING_SCORE = 0.6;
+const MIN_MATCHING_SCORE = 0.7;
 
 class DB {
   constructor() {
