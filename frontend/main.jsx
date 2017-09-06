@@ -7,17 +7,73 @@ function roundToTwo(num) {
     return +(Math.round(num + 'e+2')  + 'e-2');
 }
 
+class BreakdownDrawer extends React.Component {
+  render() {
+    const visibilityClass = this.props.visible ? '' : 'hidden';
+
+    return (
+      <div className={['breakdown', visibilityClass].join(' ')}>
+        <span>Population: {this.props.popl.toFixed(2)}</span>
+        <span>Distance: {this.props.distance.toFixed(2)}</span>
+        <span>Jaro-Winkler: {this.props.ldist.toFixed(2)}</span>
+      </div>
+    );
+  }
+}
+
+
+class SuggestionItem extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.handleScoreClick = this.handleScoreClick.bind(this);
+
+    this.state = {
+      showDrawer: false
+    }
+  }
+
+  handleScoreClick(event) {
+    this.setState((prevState) => {
+      return {showDrawer: !prevState.showDrawer};
+    });
+  }
+
+  render() {
+    const coords = this.props.distance !== null ?
+      `(${this.props.distance}km)` :
+      `(${this.props.lat.toFixed(2)}, ${this.props.long.toFixed(2)})`;
+
+    return (<li className="suggestions-item">
+      <span className="score" onClick={this.handleScoreClick}>
+        {(this.props.score * 100).toFixed(2)}%
+      </span>
+
+      <span className="content">
+        {this.props.name}, {this.props.stateOrProvince}, {this.props.country}
+      </span>
+
+      <span className="coords">{coords}</span>
+
+      <BreakdownDrawer
+        visible={this.state.showDrawer}
+        distance={this.props.comps.distance}
+        popl={this.props.comps.population}
+        ldist={this.props.comps.ldist}
+      />
+    </li>);
+  }
+}
+
 class SuggestionsDropDown extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
     const children = this.props.suggestions.map(s => {
-      const coords = s.distance !== null ? `(${s.distance}km)` : `(${s.lat.toFixed(2)}, ${s.long.toFixed(2)})`;
-
       return (
-        <li className="suggestions-item"  key={s.id}>
-          <span className="score">{(s.score * 100).toFixed(2)}%</span>
-          <span className="content">{s.name}, {s.stateOrProvince}, {s.country}</span>
-          <span className="coords">{coords}</span>
-        </li>
+        <SuggestionItem {...s} key={s.id} />
       );
     });
 
@@ -32,12 +88,11 @@ class SearchBox extends React.Component {
     super(props);
 
     this.state = {
-      suggestions: [],
-      open: false
+      suggestions: []
     };
 
     this.handleChange = this.handleChange.bind(this);
-    this._debouncedOnChange = _.debounce(this._debouncedOnChange.bind(this), 180);
+    this._debouncedOnChange = _.debounce(this._debouncedOnChange.bind(this), 100);
   }
 
   async handleChange(event) {
@@ -70,22 +125,48 @@ class SearchBox extends React.Component {
   }
 
   render() {
-    return (
-      <div>
-        <input type="text" className="search-box" onChange={this.handleChange} autoFocus />
-        <SuggestionsDropDown className={'suggestions-dropdown' + (this.state.open ? 'show' : '')} suggestions={this.state.suggestions} />
-      </div>
-    );
+    return (<div>
+      <input type="text" className="search-box" onChange={this.handleChange} autoFocus />
+      <SuggestionsDropDown className={'suggestions-dropdown' + (this.state.open ? 'show' : '')} suggestions={this.state.suggestions} />
+    </div>)
+  }
+}
+
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      loading: true
+    };
+  }
+
+  componentDidMount() {
+    navigator.geolocation.getCurrentPosition(response => {
+      userLocation = {
+        lat: roundToTwo(response.coords.latitude),
+        long: roundToTwo(response.coords.longitude)
+      };
+
+      this.setState({
+        loading: false
+      });
+    }, () => {
+      this.setState({
+        loading: false
+      });
+    });
+  }
+
+  render() {
+    if (this.state.loading) {
+      return (<div className="loading">Geolocating, please hold...</div>);
+    }
+
+    return (<SearchBox />);
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  ReactDOM.render(React.createElement(SearchBox, {}, null), document.getElementById('root'));
-
-  navigator.geolocation.getCurrentPosition(response => {
-    userLocation = {
-      lat: roundToTwo(response.coords.latitude),
-      long: roundToTwo(response.coords.longitude)
-    };
-  });
+  ReactDOM.render(React.createElement(App, {}, null), document.getElementById('root'));
 });
