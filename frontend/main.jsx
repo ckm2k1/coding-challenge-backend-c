@@ -1,5 +1,3 @@
-let userLocation = null;
-
 // Round floats to 2 decimal places. We do this because
 // the server caches hits using coords and we don't want a single
 // digit difference in the coords to cause a new cache entry.
@@ -104,6 +102,7 @@ class SearchBox extends React.Component {
   async _debouncedOnChange(value) {
     if (value && value.length >= 3) {
       let apiUrl = `/suggestions?q=${encodeURIComponent(value)}`;
+      const userLocation = this.props.userLocation;
       if (userLocation) {
         apiUrl = `${apiUrl}&lat=${userLocation.lat}&long=${userLocation.long}`;
       }
@@ -142,6 +141,7 @@ class App extends React.Component {
     super(props);
 
     this.state = {
+      userLocation: null,
       loading: true,
       dots: '',
       timer: null,
@@ -160,17 +160,18 @@ class App extends React.Component {
 
   componentDidMount() {
     navigator.geolocation.getCurrentPosition(response => {
-      userLocation = {
-        lat: roundToTwo(response.coords.latitude),
-        long: roundToTwo(response.coords.longitude)
-      };
 
       this.setState({
+        userLocation: {
+          lat: roundToTwo(response.coords.latitude),
+          long: roundToTwo(response.coords.longitude)
+        },
         loading: false
       });
     }, () => {
       this.setState({
-        loading: false
+        loading: false,
+        userLocation: null
       });
     });
 
@@ -194,7 +195,7 @@ class App extends React.Component {
       );
     }
 
-    return (<SearchBox />);
+    return (<SearchBox userLocation={this.state.userLocation} />);
   }
 }
 
