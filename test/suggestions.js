@@ -9,7 +9,7 @@ describe('GET /suggestions', function() {
 
 		before(function(done) {
 			request
-				.get('/suggestions?q=asdfasdfasdfasdfasdfasdfasdf')
+				.get('/suggestions?q=somecityinthemiddleofnowhere')
 				.end(function(err, res) {
 					response = res;
 					response.json = JSON.parse(res.text);
