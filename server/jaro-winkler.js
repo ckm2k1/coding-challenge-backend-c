@@ -29,17 +29,18 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
     return 1;
   }
 
-  const range = (Math.floor(Math.max(s1Length, s2Length) / 2)) - 1;
+  const range = Math.floor(Math.max(s1Length, s2Length) / 2) - 1;
   const s1Matches = new Array(s1Length);
   const s2Matches = new Array(s2Length);
+  const s2l = s2Length - 1;
 
   for (let i = 0; i < s1Length; i++) {
     const low  = (i >= range) ? i - range : 0;
-    const high = (i + range <= (s2Length - 1)) ? (i + range) : (s2Length - 1);
+    const high = ((i + range) <= s2l) ? (i + range) : s2l;
 
     for (let j = low; j <= high; j++) {
       if (s2Matches[j] !== true && s1[i] === s2[j]) {
-        ++matchingChars;
+        matchingChars++;
         s1Matches[i] = s2Matches[j] = true;
         break;
       }
@@ -52,9 +53,7 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
   }
 
   // Count the transpositions.
-  let k = 0;
-  let numTrans = 0;
-
+  let k = 0, numTrans = 0;
   for (let i = 0; i < s1Length; i++) {
     if (s1Matches[i] === true) {
       let j;
@@ -66,7 +65,7 @@ module.exports = function distance(s1, s2, caseSensitive = false) {
       }
 
       if (s1[i] !== s2[j]) {
-        ++numTrans;
+        numTrans++;
       }
     }
   }
