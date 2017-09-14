@@ -3,12 +3,12 @@
 // Jaro and Winkler found here:
 // http://web.archive.org/web/20100227020019/http://www.census.gov/geo/msb/stand/strcmp.c
 function distance(str1, str2, ignoreCase = true) {
-  const s1l = str1.length;
-  const s2l = str2.length;
-  const str1_flag = new Array(s1l);
-  const str2_flag = new Array(s2l);
-  let range = Math.floor(Math.max(s1l, s2l) / 2) - 1;
-  let minv = Math.min(s1l, s2l);
+  var s1l = str1.length;
+  var s2l = str2.length;
+  var str1_flag = new Array(s1l);
+  var str2_flag = new Array(s2l);
+  var range = Math.floor(Math.max(s1l, s2l) / 2) - 1;
+  var minv = Math.min(s1l, s2l);
 
   range = range < 0 ? 0 : range;
 
@@ -20,13 +20,13 @@ function distance(str1, str2, ignoreCase = true) {
   }
 
   // Find matches.
-  let matchingChars = 0;
-  const s2LastIndex = s2l - 1;
-   for (let i = 0; i < s1l; i++) {
-    const low = i >= range ? i - range : 0;
-    const high = (i + range) <= s2LastIndex ? i + range : s2LastIndex;
+  var matchingChars = 0;
+  var s2LastIndex = s2l - 1;
+   for (var i = 0; i < s1l; i++) {
+    var low = i >= range ? i - range : 0;
+    var high = (i + range) <= s2LastIndex ? i + range : s2LastIndex;
 
-    for (let j = low; j <= high; j++) {
+    for (var j = low; j <= high; j++) {
       if (str2_flag[j] !== true && str1[i] === str2[j]) {
         str1_flag[i] = str2_flag[j] = true;
         matchingChars++;
@@ -39,11 +39,11 @@ function distance(str1, str2, ignoreCase = true) {
   if (!matchingChars) return 0.0;
 
   // Count transpositions
-  let trx = 0;
-  let k = 0;
-  for (let i = 0; i < s1l; i++) {
+  var trx = 0;
+  var k = 0;
+  for (var i = 0; i < s1l; i++) {
     if (str1_flag[i] === true) {
-      let j;
+      var j;
       for (j = k; j < s2l; j++) {
         if (str2_flag[j]) {
           k = j + 1;
@@ -57,14 +57,14 @@ function distance(str1, str2, ignoreCase = true) {
 
   trx = Math.floor(trx / 2);
 
-  let weight = (matchingChars / s1l + matchingChars / s2l + ((matchingChars - trx) / matchingChars)) / 3;
+  var weight = (matchingChars / s1l + matchingChars / s2l + ((matchingChars - trx) / matchingChars)) / 3;
   // console.log('weight', weight);
 
   if (weight > 0.7) {
-    const j = (minv >= 4) ? 4 : minv;
-    let i;
+    var j = (minv >= 4) ? 4 : minv;
+    var i;
     for (i=0; ((i < j) && (str1[i] === str2[i])); i++);
-    if (i) weight += i * 0.1 * (1 - weight);
+    if (i) weight = weight + i * 0.1 * (1 - weight);
   }
 
   return weight;

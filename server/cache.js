@@ -10,14 +10,14 @@ module.exports.genKey = function(...args) {
 }
 
 module.exports.read = function(key, callback) {
-  setTimeout(() => {
+  process.nextTick(() => {
      callback(null, __cache[key]);
   }, 0);
 }
 
 module.exports.store = function(key, val, callback = () => {}) {
   __cache[key] = val;
-  setTimeout(callback, 0);
+  process.nextTick(callback, 0);
 }
 
 module.exports.exists = function(key) {

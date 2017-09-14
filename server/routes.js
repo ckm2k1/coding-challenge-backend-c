@@ -4,6 +4,40 @@ const db = new (require('./db'))();
 const cache = require('./cache');
 const config = require('./config');
 const os = require('os');
+const fastJSON = require('fast-json-stringify');
+const stringify = fastJSON({
+  title: 'output-schema',
+  type: 'object',
+  properties: {
+    suggestions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: {type: 'integer'},
+          name: {type: 'string'},
+          asciiname: {type: 'string'},
+          lat: {type: 'number'},
+          long: {type: 'number'},
+          stateOrProvince: {type: 'string'},
+          country: {type: 'string'},
+          distance: {type: 'number'},
+          population: {type: 'number'},
+          score: {type: 'number'},
+          comps: {
+            type: 'object',
+            properties: {
+              ldist: {type: 'number'},
+              score: {type: 'number'},
+              distance: {type: 'integer'},
+              population: {type: 'integer'},
+            }
+          }
+        }
+      }
+    }
+  }
+});
 db.load();
 
 suggestionsRouter.get('/suggestions', (req, res, next) => {
@@ -72,9 +106,10 @@ function sendResponse(res, output) {
   // the client and we want to hurry up and move
   // on to the next request.
   res.setHeader('Connection', 'close');
+  res.setHeader('Content-type', 'application/json');
 
   res.status(output.suggestions.length ? 200 : 404);
-  return res.json(output);
+  return res.send(stringify(output));
 }
 
 suggestionsRouter.get('/machine-stats', (req, res) => {

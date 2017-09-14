@@ -611,6 +611,16 @@ extsprintf@1.3.0, extsprintf@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.3.0.tgz#96918440e3041a7a414f8c52e3c574eb3c3e1e05"
 
+fast-json-stringify@^0.12.4:
+  version "0.12.4"
+  resolved "https://registry.yarnpkg.com/fast-json-stringify/-/fast-json-stringify-0.12.4.tgz#555c7cc6d8e33c674ddfe0daa394a9ed377d0c04"
+  dependencies:
+    fast-safe-stringify "^1.2.0"
+
+fast-safe-stringify@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-1.2.0.tgz#ebd42666fd18fe4f2ba4f0d295065f3f85cade96"
+
 filename-regex@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/filename-regex/-/filename-regex-2.0.1.tgz#c1c4b9bee3e09725ddb106b75c1e301fe2f18b26"

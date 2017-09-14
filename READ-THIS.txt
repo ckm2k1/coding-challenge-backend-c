@@ -1,4 +1,75 @@
-## Development notes
+## Why are we here?
+My colleague recently sent me the BusBud backend coding challenge since he was interviewing with the company, and I thought that it was really cool because it had a bunch of open-ended kind of problems.
+Since I recently got a bit of extra free time, I decided to see how far I can push my skills within the paramters of the challenge.
+I also figured that maybe I can learn something about matching/searching algorithms in the process.
+
+Below are my notes regarding the implementation.
+
+### The Basic Architechture
+The code implements a pretty basic and straightforward
+API server.
+
+Since I'm a JS guy, going with Node was a no-brainer
+and Express was chosen due to familiarity and ease of use.
+
+The code implements the required /suggestions route, a caching
+layer, an in memory DB, and a few routes only used for debugging.
+
+s### The Data and Database
+My initial instinct sent me towards the likes of MySQL or maybe Mongo due to it's built in ability to search by distance.
+
+However, looking at the geo data provided, it was quite small, easy to process and easy to load into memory. Since I can process it into a more useful format (JSON), I decided to skip any 'real' database and associated libraries, ORMs and other bulk, and go with a simple in memory module for loading and searching the DB.
+
+`db.js` is the whole thing, providing loading and search functions. It outputs a sorted result set based on user queries
+and geolocation data sent from the user's browser, if available.
+
+A major flaw of this module is that it isn't shared among the cluster workers, which means each one has an in memory copy of the DB. This is easily fixed by moving the DB to the master and providing access functions in the same style as the caching middleware.
+
+### Matching and Scoring Algorithms
+The real meat of this challenge was in choosing a proper string matching/searching algorithm, followed by a scoring mechanism for improving matches based on distance and city population.
+
+I've tested multiple approaches, starting from the very naive basic string matching, regexes, and on to known algorithms like Levenshtein distance, hamming distance, n-gram and Jaro-Winkler.
+
+The key to finding a good algo was to look at how someone might search for a city using this API, and what kind of results they'd expect to get for their input.
+
+When people type into a search box it's often in a sort of fast and loose style, entering key words as quickly as possible to see suggestions come up.
+
+My hypothesis here was that spelling mistakes, transpositions and missing input were going to be the most common errors and I focused on finding an algorithm that would deal well with that sort of input as well as perform quickly against our data.
+
+The naive solution of simply trying to match strings against city names produced horrible results and there's no point in looking at it.
+
+Regexes was another write off since it simply doesn't deal well with those types of errors and it was quite hard for me to construct a good regex from the user input that would yeild good results.
+
+Levenshtein distance seemed like a good candidate, and for a few simple tests looked like it would work. However, trying combinations like 'Londo' as input against 'Londonberry', Levenshtein gives a large edit distance which ends up penalizing this result. This is not useful to the user since Londonberry, intuitively, looks like a sensible suggestion for that input.
+
+Leveshtein-Dassau was tried quickly, and despite producing better results for issues like 'Montrael' and 'Montreal', suffered from mostly the same issue.
+
+Another hypothesis I came up with after testing Levenshtein distance was that users are unlikely to get the first and last letters wrong, and that getting the prefix to a word correctly should be worth a significant boost in points.
+
+This led me to Jaro-Winkler, an algorithm which scores strings based on similarity and has a specific boost for matching prefixes. It also takes into account transpositions and string length. It was originally developed for matching human names against existing data, and since city names and human names seem like a similar task, I gave it a go.
+
+Jaro-Winkler yielded excellent results right off the bat. Getting the prefix right immediately brings up useful suggestions, and with the addition of bonuses for distance and population, shows, what seems to me, as great results for searching bus routes from one city to another.
+
+The last hypothesis in the scoring portion was that people searching for buses would be looking for large cities located  100-600km from their current location. Anything closer would be worth possibly renting a car, and anything further seems unlikely to be a desirable bus ride.
+
+### Scaling and Performance
+For increasing the server capacity, I chose Node's Cluster module. It's very easy to use, and immediately gives the ability to use all CPU cores on a modern machine.
+
+I tested a few worker counts, from `cpuCores / (2 || 4)` to `cpuCores * 2`. Scaling to 1 instance per core worked best. 2 instances per core seemed like a good option but in reality  ended up accepting more connections but taking longer on average to serve all requests.
+
+The OS based scheduler performed better than round robin, due to an occasional long request (under load) causing the entire server to wait on that single worker to finish. This may not be the case for different types of work loads, but here it performed significantly worse.
+
+The whole server can be deployed to multiple machines, and as long as the DB and caching layers are shared, everything will work correctly.
+
+### Caching
+Since requests take on average 20ms to serve when having to search the DB, caching was key to significantly improve API performance.
+
+### Dev Utils
+
+### The Front-end
+
+### Conclusions
+
 
 ### Flaws and trade offs
 1. Doesn't use any kind of DB. Getting one involved, processing the data, loading it, using a lib to interface
