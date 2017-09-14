@@ -12,6 +12,9 @@ cluster.schedulingPolicy = cluster.SCHED_NONE;
 const stats = {};
 let total = 0;
 if (cluster.isMaster && !config.isDev) {
+	// Usefull for debugging if a sysadmin
+	// wants a quick peak at the req handling stats
+	// from the child processes.
 	process.on('SIGUSR1', handleStatsRequest);
 
 	console.log(`Master ${process.pid} is running`);
@@ -24,10 +27,10 @@ if (cluster.isMaster && !config.isDev) {
 	// Register cluster events.
 	cluster.on('message', (worker, msg) => {
 		if (msg.type === 'print-stats') {
-				return handleStatsRequest();
-			}
+			return handleStatsRequest();
+		}
 
-			++stats[worker.id], ++total;
+		++stats[worker.id], ++total;
 	});
 
 	cluster.on('exit', (worker, code, signal) => {
@@ -43,7 +46,7 @@ if (cluster.isMaster && !config.isDev) {
 }
 
 function displayRequestStats() {
-	for(let [key, val] of Object.entries(stats)) {
+	for (let [key, val] of Object.entries(stats)) {
 		console.log(`Worker ${key} handled ${(val / total * 100) || 0}% of the load`);
 	}
 }

@@ -1,4 +1,28 @@
-module.exports = function scorer(ldist, population, distance) {
+/**
+ * Scoring function takes JW distance and adds
+ * bonuses based on city population and distance
+ * from user.
+ *
+ * Note that cities between 100-400km from the user get the highest
+ * boost because I'm assuming that would be the most common bus trip.
+ *
+ * Large metro areas are also the highest boosted because I'm assuming that
+ * bus trips between very small towns are quite unlikely and most users will
+ * search for large cities.
+ *
+ * Scores of more than 1 amond the matches are possible. This is on purpose
+ * because due to amobiguities in same-name cities, or missing the user location
+ * it's impossible to tell which city is the right one. We normalize the scores to 1
+ * instead and display it in descending order.
+ *
+ * @param {number} ldist The Jaro Winkler distance.
+ * @param {integer} population City population.
+ * @param {integer} [distance] Distance from user in km of the given match.
+ *
+ * @return {object} An object with a score component, and the individual
+ *                     scores of each element. Useful for debugging.
+ */
+function scorer(ldist, population, distance) {
   const sc = {
     ldist: 0,
     score: 0,
@@ -18,7 +42,7 @@ module.exports = function scorer(ldist, population, distance) {
     if (distance <= 100) ds += 0.04;
     // Reasonably close. This is one of
     // the most common distances between
-    // large metropole areas.
+    // large metropolitain areas.
     else if (distance <= 400) ds += 0.05;
     // Road trip
     else if (distance <= 600) ds += 0.03;
@@ -51,3 +75,5 @@ module.exports = function scorer(ldist, population, distance) {
   sc.score = score < 0 ? 0 : (score > 1 ? 1 : score);
   return sc;
 }
+
+module.exports = scorer;

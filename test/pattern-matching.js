@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-const jw = require('../server/jaro-winkler');
+const jw = require('../server/jw');
 
 
 const known = [{

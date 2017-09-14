@@ -7,22 +7,41 @@ function isUndefined(arg) {
   return typeof arg === 'undefined';
 }
 
+// This should be extracted to a config file.
 const MIN_MATCHING_SCORE = 0.7;
 
+/**
+ * Tiny, pretend DB class.
+ */
 class DB {
+  /**
+   * Constructor.
+   *
+   * @return {undefined}
+   */
   constructor() {
     this.__db = null;
   }
 
+  /**
+   * Returns a possibly sorted list of matches against user provided
+   * 'term'.
+   *
+   * @param {string} term User input term.
+   * @param {number} lat User's latitude.
+   * @param {number} long User's longitude.
+   * @param {boolean} sort Should we sort the output array.
+   *
+   * @return {array} An array of scored matches or empty array if non qualify.
+   */
   search(term, lat = null, long = null, sort = true) {
     return Promise.resolve()
       .then(() => {
         const weighted = [];
-        term = term.toLowerCase();
 
         // Score, filter and clone the results in one shot.
         this.__db.reduce((matches, city) => {
-          const haystack = city.asciiname.toLowerCase();
+          const target = city.asciiname;
 
           let distance;
           if (!isUndefined(lat) && !isUndefined(long)) {
@@ -30,7 +49,7 @@ class DB {
           }
 
           const score = scorer(
-            jwDistance(term, haystack),
+            jwDistance(term, target),
             city.population,
             distance
           );
@@ -56,6 +75,11 @@ class DB {
       });
   }
 
+  /**
+   * Load the DB into memory.
+   *
+   * @return {DB}
+   */
   load() {
     this.__db = require(config.dbFile);
 

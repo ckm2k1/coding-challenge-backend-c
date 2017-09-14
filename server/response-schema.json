@@ -1,0 +1,61 @@
+{
+	"title": "output-schema",
+	"type": "object",
+	"properties": {
+		"suggestions": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"name": {
+						"type": "string"
+					},
+					"asciiname": {
+						"type": "string"
+					},
+					"lat": {
+						"type": "number"
+					},
+					"long": {
+						"type": "number"
+					},
+					"stateOrProvince": {
+						"type": "string"
+					},
+					"country": {
+						"type": "string"
+					},
+					"distance": {
+						"type": "number"
+					},
+					"population": {
+						"type": "number"
+					},
+					"score": {
+						"type": "number"
+					},
+					"comps": {
+						"type": "object",
+						"properties": {
+							"ldist": {
+								"type": "number"
+							},
+							"score": {
+								"type": "number"
+							},
+							"distance": {
+								"type": "integer"
+							},
+							"population": {
+								"type": "integer"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

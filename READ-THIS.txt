@@ -1,29 +1,24 @@
 ## Why are we here?
-My colleague recently sent me the BusBud backend coding challenge since he was interviewing with the company, and I thought that it was really cool because it had a bunch of open-ended kind of problems.
-Since I recently got a bit of extra free time, I decided to see how far I can push my skills within the paramters of the challenge.
-I also figured that maybe I can learn something about matching/searching algorithms in the process.
+My colleague recently sent me the BusBud backend coding challenge because he was interviewing with the company and
+I thought that it was really interesting because it had a bunch of open-ended problems to solve.
 
-Below are my notes regarding the implementation.
+I recently got a bit of spare time so I decided to play around with the challenge, make something, and maybe learn some cool new algorithm.
 
 ### The Basic Architechture
-The code implements a pretty basic and straightforward
-API server.
+The code implements a pretty basic and straightforward API server.
 
-Since I'm a JS guy, going with Node was a no-brainer
-and Express was chosen due to familiarity and ease of use.
+Since I'm a JS guy, going with Node was a no-brainer and Express was chosen due to familiarity and ease of use.
 
-The code implements the required /suggestions route, a caching
-layer, an in memory DB, and a few routes only used for debugging.
+The code implements the required /suggestions route, a tiny caching layer, an in memory DB and a scoring mechanism.
 
-s### The Data and Database
-My initial instinct sent me towards the likes of MySQL or maybe Mongo due to it's built in ability to search by distance.
+### The Data and Database
+My initial instinct said -- 'you should totally use MySQL or MongoDB, it even supports searching using lat,lang coords' -- but I decided against this
+because it removes the need for any supporting libs, ORMs and what have you. And since this is a toy coding challenge, keeping it simple trumps any
+other concerns.
 
-However, looking at the geo data provided, it was quite small, easy to process and easy to load into memory. Since I can process it into a more useful format (JSON), I decided to skip any 'real' database and associated libraries, ORMs and other bulk, and go with a simple in memory module for loading and searching the DB.
+`db.js` is the whole thing, providing loading and search functions. It outputs a sorted result set based on user queries and geolocation data sent from the user's browser, if available.
 
-`db.js` is the whole thing, providing loading and search functions. It outputs a sorted result set based on user queries
-and geolocation data sent from the user's browser, if available.
-
-A major flaw of this module is that it isn't shared among the cluster workers, which means each one has an in memory copy of the DB. This is easily fixed by moving the DB to the master and providing access functions in the same style as the caching middleware.
+A major flaw of this module is that it isn't shared among the cluster workers, which means each one has an in memory copy of the DB. This is easily fixed by moving the DB to the master and providing access functions in the same style as the caching middleware. (I'm skipping the glaring disadvantage that this isn't a `db` in any real sense of that word.)
 
 ### Matching and Scoring Algorithms
 The real meat of this challenge was in choosing a proper string matching/searching algorithm, followed by a scoring mechanism for improving matches based on distance and city population.
@@ -42,7 +37,7 @@ Regexes was another write off since it simply doesn't deal well with those types
 
 Levenshtein distance seemed like a good candidate, and for a few simple tests looked like it would work. However, trying combinations like 'Londo' as input against 'Londonberry', Levenshtein gives a large edit distance which ends up penalizing this result. This is not useful to the user since Londonberry, intuitively, looks like a sensible suggestion for that input.
 
-Leveshtein-Dassau was tried quickly, and despite producing better results for issues like 'Montrael' and 'Montreal', suffered from mostly the same issue.
+Leveshtein-Demarau was tried quickly, and despite producing better results for issues like 'Montrael' and 'Montreal', suffered from mostly the same issue.
 
 Another hypothesis I came up with after testing Levenshtein distance was that users are unlikely to get the first and last letters wrong, and that getting the prefix to a word correctly should be worth a significant boost in points.
 

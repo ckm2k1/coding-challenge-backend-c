@@ -3,45 +3,24 @@ const suggestionsRouter = express.Router();
 const db = new (require('./db'))();
 const cache = require('./cache');
 const config = require('./config');
-const os = require('os');
 const fastJSON = require('fast-json-stringify');
-const stringify = fastJSON({
-  title: 'output-schema',
-  type: 'object',
-  properties: {
-    suggestions: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: {type: 'integer'},
-          name: {type: 'string'},
-          asciiname: {type: 'string'},
-          lat: {type: 'number'},
-          long: {type: 'number'},
-          stateOrProvince: {type: 'string'},
-          country: {type: 'string'},
-          distance: {type: 'number'},
-          population: {type: 'number'},
-          score: {type: 'number'},
-          comps: {
-            type: 'object',
-            properties: {
-              ldist: {type: 'number'},
-              score: {type: 'number'},
-              distance: {type: 'integer'},
-              population: {type: 'integer'},
-            }
-          }
-        }
-      }
-    }
-  }
-});
+const stringify = fastJSON(require('./response-schema.json'));
 db.load();
 
+/**
+ * Main route handler for /suggestions.
+ *
+ * Includes the caching layer as an early middleware and
+ * basic error handling as a final middleware.
+ */
 suggestionsRouter.get('/suggestions', (req, res, next) => {
-  const {q: query, lat, long, ['use-cache']: useCache = true, limit = config.search.minResults} = req.query;
+  const {
+    q: query,
+    lat,
+    long,
+    ['use-cache']: useCache = true,
+    limit = config.search.minResults
+  } = req.query;
 
   if (!query) {
     throw new Error('Empty query');
@@ -77,6 +56,17 @@ suggestionsRouter.get('/suggestions', (req, res, next) => {
   res.end();
 });
 
+/**
+ * Perform the search and map the output to our response
+ * format.
+ *
+ * @param {string} query User query.
+ * @param {number} lat User latitude coordinate.
+ * @param {number} long User longitude coordinate.
+ * @param {integer} limit How many rows to return.
+ *
+ * @return {object} An object with all suggestions relevant to user query.
+ */
 async function searchDB(query, lat, long, limit) {
   const results = await db.search(query, parseFloat(lat), parseFloat(long));
   const output = { suggestions: results.slice(0, limit) };
@@ -100,35 +90,37 @@ async function searchDB(query, lat, long, limit) {
     return output;
 }
 
+/**
+ * Send out the response, setting appropriate
+ * headers.
+ *
+ * @param {Response} res Response object provided by express.
+ * @param {object} output Output object returned from searching DB.
+ *
+ * @return {undefined}
+ */
 function sendResponse(res, output) {
   // Close connections immediately since
   // we won't have any futher interaction with
   // the client and we want to hurry up and move
   // on to the next request.
   res.setHeader('Connection', 'close');
-  res.setHeader('Content-type', 'application/json');
 
-  res.status(output.suggestions.length ? 200 : 404);
+  let status;
+  if (output.suggestions.length) {
+    // we set this header manually because we stringify
+    // the data ourselves using fast-json which avoids
+    // a trip to the native JSONStrigifier. Suprisingly,
+    // this is actually faster when the schema of the
+    // object is known in advance.
+    res.setHeader('Content-Type', 'application/json');
+    status = 200;
+  } else {
+    status = 404;
+  }
+
+  res.status(status);
   return res.send(stringify(output));
 }
-
-suggestionsRouter.get('/machine-stats', (req, res) => {
-  res.json({
-    mem: process.memoryUsage(),
-    cpus: config.cpus,
-    uptime: process.uptime(),
-    cpuUsageTIme: process.cpuUsage(),
-    systemMem: {
-      freem: os.freemem() / 1e6,
-      total: os.totalmem() / 1e6
-    },
-    load: os.loadavg()
-  });
-})
-
-suggestionsRouter.get('/worker-stats', (req, res) => {
-  process.send({type: 'print-stats'});
-  res.end();
-});
 
 module.exports = suggestionsRouter;
