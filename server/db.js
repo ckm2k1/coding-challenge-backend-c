@@ -1,5 +1,4 @@
 const config = require('./config');
-// const jwDistance = require('./jaro-winkler');
 const jwDistance = require('./jw');
 const coords = require('./coords');
 const scorer = require('./scorer');
