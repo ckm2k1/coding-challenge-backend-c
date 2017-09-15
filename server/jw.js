@@ -14,32 +14,32 @@
  * @return {number} Returns a float between [0.0,1.0]
  */
 function distance(str1, str2, ignoreCase = true) {
-  // The reason this module uses 'var' and not 'let/const' is because
+  // The reason this module uses 'let' and not 'let/const' is because
   // V8 deoptimizes this function with 'Unsupported phi use of const or let variable'.
-  // To get around the problem quickly, we switch to 'var'.
-  var s1l = str1.length;
-  var s2l = str2.length;
+  // To get around the problem quickly, we switch to 'let'.
+  let s1l = str1.length;
+  let s2l = str2.length;
   // Preallocating the arrays is slightly faster in
   // V8 than using dynamic arrays.
-  var str1_flag = new Array(s1l);
-  var str2_flag = new Array(s2l);
-  var range = Math.floor(Math.max(s1l, s2l) / 2) - 1;
-  var minv = Math.min(s1l, s2l);
-  var i, j, k;
+  let str1_flag = new Array(s1l);
+  let str2_flag = new Array(s2l);
+  let range = Math.floor(Math.max(s1l, s2l) / 2) - 1;
+  let minv = Math.min(s1l, s2l);
+  let i, j, k;
 
   range = range < 0 ? 0 : range;
 
   if (ignoreCase) {
-    str1 = str1.toUpperCase();
-    str2 = str2.toUpperCase();
+    str1 = str1.toLowerCase();
+    str2 = str2.toLowerCase();
   }
 
   // Find matches.
-  var matchingChars = 0;
-  var s2LastIndex = s2l - 1;
+  let matchingChars = 0;
+  let s2LastIndex = s2l - 1;
    for (i = 0; i < s1l; i++) {
-    var low = i >= range ? i - range : 0;
-    var high = (i + range) <= s2LastIndex ? i + range : s2LastIndex;
+    let low = i >= range ? i - range : 0;
+    let high = (i + range) <= s2LastIndex ? i + range : s2LastIndex;
 
     for (j = low; j <= high; j++) {
       if (str2_flag[j] !== true && str1[i] === str2[j]) {
@@ -53,7 +53,7 @@ function distance(str1, str2, ignoreCase = true) {
   if (!matchingChars) return 0.0;
 
   // Count transpositions
-  var trx = 0;
+  let trx = 0;
   k = 0;
   for (i = 0; i < s1l; i++) {
     if (str1_flag[i] === true) {
@@ -68,7 +68,7 @@ function distance(str1, str2, ignoreCase = true) {
   }
 
   // The Jaro weight.
-  var weight = (matchingChars / s1l + matchingChars / s2l + ((matchingChars - Math.floor(trx / 2)) / matchingChars)) / 3;
+  let weight = (matchingChars / s1l + matchingChars / s2l + ((matchingChars - Math.floor(trx / 2)) / matchingChars)) / 3;
 
   // Prefix based boosting if weight crosses threshold.
   // This param is tunable depending on how much you want

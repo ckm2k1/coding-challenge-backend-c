@@ -9,8 +9,8 @@
     "debug": "node --inspect server",
     "test": "./node_modules/mocha/bin/mocha ./test/",
     "loadtest": "env NODE_ENV=ci node server",
-    "benchmark": "siege -R ./test/.siegerc -f ./test/mocks/urls.txt",
-    "benchmark-cached": "siege -R ./test/.siegerc -f ./test/mocks/urls-with-cache.txt",
+    "benchmark": "./benchmark/run.sh urls.txt",
+    "benchmark-cached": "./benchmark/run.sh urls-with-cache.txt",
     "dev-ui": "./node_modules/.bin/babel --presets react ./frontend --out-dir ./public",
     "postinstall": "npm run dev-ui"
   },
