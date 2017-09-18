@@ -13,7 +13,13 @@ db.load();
  * Includes the caching layer as an early middleware and
  * basic error handling as a final middleware.
  */
-suggestionsRouter.get('/suggestions', (req, res, next) => {
+suggestionsRouter.get('/suggestions',
+  handleCache,
+  handleRequest,
+  handleError
+);
+
+function handleCache(req, res, next) {
   const {
     q: query,
     lat,
@@ -37,14 +43,18 @@ suggestionsRouter.get('/suggestions', (req, res, next) => {
         next();
     });
   } else return next();
-}, async (req, res) => {
+}
+
+async function handleRequest(req, res) {
   const { query, lat, long, limit, cacheKey } = res.locals;
 
   const output = await searchDB(query, lat, long, limit);
-
   req.app.locals.cache.store(cacheKey, output);
-  sendResponse(res, output).end();
-}, (err, req, res, next) => {
+
+  return sendResponse(res, output).end();
+}
+
+function handleError(err, req, res, next) {
   if (err.message === 'Empty query') {
     res.status(404);
     return res.json({
@@ -54,7 +64,7 @@ suggestionsRouter.get('/suggestions', (req, res, next) => {
 
   res.status(500);
   res.end();
-});
+}
 
 /**
  * Perform the search and map the output to our response
