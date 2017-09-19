@@ -1,5 +1,6 @@
-const express = require('express');
+// const express = require('express');
 const routes = require('./routes');
+const http = require('http');
 
 /**
  * Initializes the express server and start
@@ -11,11 +12,9 @@ const routes = require('./routes');
  * @return {Express} The express app instance.
  */
 module.exports.init = function(cache, port) {
-  const app = express();
-  app.locals.cache = cache;
-  app.use(express.static('public'));
-  app.use(routes);
-  app.listen(port);
+  const server = http.createServer(routes.bind(null, cache));
 
-  return app;
+  server.listen(port, '0.0.0.0');
+
+  return server;
 }

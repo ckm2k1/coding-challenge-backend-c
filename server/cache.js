@@ -30,7 +30,7 @@ module.exports.genKey = function(...args) {
  * @return {undefined}
  */
 module.exports.read = function(key, callback) {
-  process.nextTick(() => {
+  setImmediate(() => {
      callback(null, __cache[key]);
   }, 0);
 }
@@ -47,7 +47,7 @@ module.exports.read = function(key, callback) {
  */
 module.exports.store = function(key, val, callback = () => {}) {
   __cache[key] = val;
-  process.nextTick(callback, 0);
+  setImmediate(callback, 0);
 }
 
 /**
