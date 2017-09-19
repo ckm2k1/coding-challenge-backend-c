@@ -1,5 +1,4 @@
-benchmark = false
-delay = 0.2
+benchmark = true
 time = 15s
-concurrent = 200
+concurrent = 150
 internet = true
