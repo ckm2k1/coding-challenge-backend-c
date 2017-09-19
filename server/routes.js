@@ -45,7 +45,7 @@ function handleCache(req, res, next) {
   } else return next();
 }
 
-async function handleRequest(req, res) {
+async function handleRequest(req, res, next) {
   const { query, lat, long, limit, cacheKey } = res.locals;
 
   const output = await searchDB(query, lat, long, limit);

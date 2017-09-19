@@ -13,37 +13,40 @@
  *
  * @return {number} Returns a float between [0.0,1.0]
  */
-function distance(str1, str2, ignoreCase = true) {
+function distance(str1, str2) {
   // The reason this module uses 'let' and not 'let/const' is because
   // V8 deoptimizes this function with 'Unsupported phi use of const or let variable'.
   // To get around the problem quickly, we switch to 'let'.
-  let s1l = str1.length;
-  let s2l = str2.length;
-  // Preallocating the arrays is slightly faster in
-  // V8 than using dynamic arrays.
-  let str1_flag = new Array(s1l);
-  let str2_flag = new Array(s2l);
+  const s1l = str1.length;
+  const s2l = str2.length;
+  // Or'ing 0 with something will yeild a 32bit integer which should be plenty for
+  // most operations, since few words are greater than 32 characters.
+  let str1_flag = 0|0;
+  let str2_flag = 0|0;
+  const s2LastIndex = s2l - 1;
+  const minv = Math.min(s1l, s2l);
+
   let range = Math.floor(Math.max(s1l, s2l) / 2) - 1;
-  let minv = Math.min(s1l, s2l);
-  let i, j, k;
+  let matchingChars = 0;
+  let i, j, k, trx, weight;
 
   range = range < 0 ? 0 : range;
 
-  if (ignoreCase) {
-    str1 = str1.toLowerCase();
-    str2 = str2.toLowerCase();
-  }
+  // if (ignoreCase) {
+  //   str1 = str1.toLowerCase();
+  //   str2 = str2.toLowerCase();
+  // }
 
   // Find matches.
-  let matchingChars = 0;
-  let s2LastIndex = s2l - 1;
    for (i = 0; i < s1l; i++) {
-    let low = i >= range ? i - range : 0;
-    let high = (i + range) <= s2LastIndex ? i + range : s2LastIndex;
+    const low = i >= range ? i - range : 0;
+    const high = (i + range) <= s2LastIndex ? i + range : s2LastIndex;
 
     for (j = low; j <= high; j++) {
-      if (str2_flag[j] !== true && str1[i] === str2[j]) {
-        str1_flag[i] = str2_flag[j] = true;
+      if ((str2_flag & (1 << j)) && str1[i] === str2[j]) {
+        str1_flag = str1_flag | 1 << i;
+        str2_flag = str2_flag | 1 << j;
+        // str1_flag[i] = str2_flag[j] = true;
         matchingChars++;
         break;
       }
@@ -53,12 +56,12 @@ function distance(str1, str2, ignoreCase = true) {
   if (!matchingChars) return 0.0;
 
   // Count transpositions
-  let trx = 0;
+  trx = 0;
   k = 0;
   for (i = 0; i < s1l; i++) {
-    if (str1_flag[i] === true) {
+    if (str1_flag & (1 << i)) {
       for (j = k; j < s2l; j++) {
-        if (str2_flag[j]) {
+        if (str2_flag & (1 << j)) {
           k = j + 1;
           break;
         }
@@ -68,7 +71,7 @@ function distance(str1, str2, ignoreCase = true) {
   }
 
   // The Jaro weight.
-  let weight = (matchingChars / s1l + matchingChars / s2l + ((matchingChars - Math.floor(trx / 2)) / matchingChars)) / 3;
+  weight = (matchingChars / s1l + matchingChars / s2l + ((matchingChars - Math.floor(trx / 2)) / matchingChars)) / 3;
 
   // Prefix based boosting if weight crosses threshold.
   // This param is tunable depending on how much you want

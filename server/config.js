@@ -11,6 +11,6 @@ module.exports = {
   search: {
     minResults: 20
   },
-  cpus: os.cpus().length,
+  cpus: process.env.CLUSTER_WORKER_COUNT || os.cpus().length,
   isDev: process.env.NODE_ENV === 'development'
 }
