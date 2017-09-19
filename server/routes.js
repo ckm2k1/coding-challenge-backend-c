@@ -5,6 +5,8 @@ const stringify = fastJSON(require('./response-schema.json'));
 const querystring = require('querystring');
 const url = require('url');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 db.load();
 
 
@@ -25,40 +27,50 @@ module.exports = async function handler(cache, req, res) {
   const reqUrl = url.parse(req.url);
 
   if (reqUrl.pathname === '/suggestions') {
-    const {
-      q: query,
-      lat,
-      long,
-      ['use-cache']: useCache = true,
-      limit = config.search.minResults
-    } = querystring.parse(reqUrl.query);
-
-    // debug(query, lat, long, useCache);
-
-    if (!query) {
-      throw new Error('Empty query');
-    }
-
-    const cacheKey = genKey(query, lat, long, limit);
-
-    let output;
-    if (useCache) {
-        output = await new Promise((resolve, reject) => {
-        cache.read(cacheKey, (err, cachedValue) => {
-          // debug(cachedValue);
-          const result = cachedValue ?
-            cachedValue :
-            handleSearch(cache, query, lat, long, limit);
-
-          return resolve(result);
-        });
-      });
-    } else {
-      output = await handleSearch(cache, query, lat, long, limit);
-    }
-
-    return sendResponse(res, output);
+    return handleSuggestions.call(null, cache, reqUrl, req, res);
   }
+  // Extremely un-secure way of serving static assets.
+  else if(/(?:\.js|\.html|\.css)$/i.test(reqUrl.pathname)) {
+    res.statusCode = 200;
+    fs.createReadStream(path.resolve(`./public/${reqUrl.pathname.replace('/', '')}`), 'utf8').pipe(res);
+  }
+}
+
+
+async function handleSuggestions(cache, reqUrl, req, res) {
+  const {
+    q: query,
+    lat,
+    long,
+    ['use-cache']: useCache = true,
+    limit = config.search.minResults
+  } = querystring.parse(reqUrl.query);
+
+  // debug(query, lat, long, useCache);
+
+  if (!query) {
+    throw new Error('Empty query');
+  }
+
+  const cacheKey = genKey(query, lat, long, limit);
+
+  let output;
+  if (useCache) {
+    output = await new Promise((resolve, reject) => {
+      cache.read(cacheKey, (err, cachedValue) => {
+        // debug(cachedValue);
+        const result = cachedValue ?
+          cachedValue :
+          handleSearch(cache, query, lat, long, limit);
+
+        return resolve(result);
+      });
+    });
+  } else {
+    output = await handleSearch(cache, query, lat, long, limit);
+  }
+
+  return sendResponse(res, output);
 }
 
 async function handleSearch(cache, ...args) {
@@ -141,7 +153,6 @@ function sendResponse(res, output) {
     // object is known in advance.
     output = stringify(output);
     res.setHeader('Content-Type', 'text/html');
-    // res.setHeader('Content-Length', output.length);
 
     status = 200;
   } else {

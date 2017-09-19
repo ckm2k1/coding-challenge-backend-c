@@ -17,15 +17,15 @@ function distance(str1, str2, ignoreCase = true) {
   // The reason this module uses 'let' and not 'let/const' is because
   // V8 deoptimizes this function with 'Unsupported phi use of const or let variable'.
   // To get around the problem quickly, we switch to 'let'.
-  let s1l = str1.length;
-  let s2l = str2.length;
+  const s1l = str1.length;
+  const s2l = str2.length;
   // Preallocating the arrays is slightly faster in
   // V8 than using dynamic arrays.
-  let str1_flag = new Array(s1l);
-  let str2_flag = new Array(s2l);
+  const str1_flag = new Array(s1l);
+  const str2_flag = new Array(s2l);
   let range = Math.floor(Math.max(s1l, s2l) / 2) - 1;
-  let minv = Math.min(s1l, s2l);
-  let i, j, k;
+  const minv = Math.min(s1l, s2l);
+  let i, j, k, trx;
 
   range = range < 0 ? 0 : range;
 
@@ -43,7 +43,8 @@ function distance(str1, str2, ignoreCase = true) {
 
     for (j = low; j <= high; j++) {
       if (str2_flag[j] !== true && str1[i] === str2[j]) {
-        str1_flag[i] = str2_flag[j] = true;
+        str1_flag[i] = true;
+        str2_flag[j] = true;
         matchingChars++;
         break;
       }
@@ -53,7 +54,7 @@ function distance(str1, str2, ignoreCase = true) {
   if (!matchingChars) return 0.0;
 
   // Count transpositions
-  let trx = 0;
+  trx = 0;
   k = 0;
   for (i = 0; i < s1l; i++) {
     if (str1_flag[i] === true) {
