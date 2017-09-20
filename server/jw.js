@@ -43,9 +43,9 @@ function distance(str1, str2) {
     const high = (i + range) <= s2LastIndex ? i + range : s2LastIndex;
 
     for (j = low; j <= high; j++) {
-      if ((str2_flag & (1 << j)) && str1[i] === str2[j]) {
-        str1_flag = str1_flag | 1 << i;
-        str2_flag = str2_flag | 1 << j;
+      if (!(str2_flag & (1 << j)) && str1[i] === str2[j]) {
+        str1_flag = str1_flag | (1 << i);
+        str2_flag = str2_flag | (1 << j);
         // str1_flag[i] = str2_flag[j] = true;
         matchingChars++;
         break;
